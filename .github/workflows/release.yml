@@ -1,0 +1,62 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read mod name and version
+        id: mod
+        run: |
+          echo "name=$(jq -r .name info.json)" >> "$GITHUB_OUTPUT"
+          echo "version=$(jq -r .version info.json)" >> "$GITHUB_OUTPUT"
+
+      - name: Skip if this version is already released
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "v${{ steps.mod.outputs.version }}" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Release v${{ steps.mod.outputs.version }} already exists, skipping."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build mod zip
+        if: steps.check.outputs.exists == 'false'
+        run: |
+          DIR="${{ steps.mod.outputs.name }}_${{ steps.mod.outputs.version }}"
+          mkdir -p "dist/$DIR"
+          rsync -a --exclude='.git' --exclude='.github' --exclude='dist' \
+            --exclude='README.md' --exclude='.gitignore' ./ "dist/$DIR/"
+          (cd dist && zip -r "$DIR.zip" "$DIR")
+
+      - name: Extract release notes
+        if: steps.check.outputs.exists == 'false'
+        run: |
+          awk -v v="${{ steps.mod.outputs.version }}" '
+            /^Version:/ { on = ($2 == v); next }
+            /^-+$/ { next }
+            on { print }
+          ' changelog.txt > notes.txt
+
+      - name: Create release
+        if: steps.check.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "v${{ steps.mod.outputs.version }}" \
+            "dist/${{ steps.mod.outputs.name }}_${{ steps.mod.outputs.version }}.zip" \
+            --title "v${{ steps.mod.outputs.version }}" \
+            --notes-file notes.txt \
+            --target "$GITHUB_SHA"

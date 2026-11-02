@@ -1,0 +1,13 @@
+---------------------------------------------------------------------------------------------------
+Version: 0.2.3
+Date: 2026-11-02
+  Features:
+    - Heat limit: scales the heat each Solar Halo supercomputer craft puts into the heat network.
+      Startup setting "Supercomputer heat (% of normal)", range 1 to 75, default 75.
+      Power use and Compute output are unchanged.
+    - Temperature label ("172°C / 200°C") and a 0 to 200 °C bar on every supercomputer.
+      Blue below 160, green 160 to 180, amber 180 to 200, red at 200 and above.
+    - Overview window listing all supercomputers on all surfaces with location, temperature,
+      state, machine status and a Show button. Opens from a shortcut button or Ctrl+Shift+H.
+  Bugfixes:
+    - Fixed the shortcut prototype icon format for Factorio 2.0.

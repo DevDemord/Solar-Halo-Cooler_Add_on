@@ -1,0 +1,12 @@
+{
+  "name": "solar-halo-cooler_add_on",
+  "version": "0.2.3",
+  "title": "Solar Halo Cooler Add-on",
+  "author": "local",
+  "factorio_version": "2.0",
+  "dependencies": [
+    "base >= 2.0",
+    "Solar-Halo"
+  ],
+  "description": "Limits the heat the Solar Halo supercomputer puts into the heat network to at most 75% of normal, shows its temperature on the machine, and adds an overview window of all supercomputers."
+}
